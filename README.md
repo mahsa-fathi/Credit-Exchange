@@ -23,7 +23,7 @@ and Transaction keeps the log of transactions.
 | created_at | DATETIME     | False    |
 | updated_at | DATETIME     | False    |
 
-#### Run Logs
+#### Transactions
 
 | Name           | Type        | Optional |
 |----------------|-------------|----------|
