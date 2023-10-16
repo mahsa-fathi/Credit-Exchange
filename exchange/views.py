@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db import transaction
+from rest_framework.exceptions import ValidationError
 from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework.decorators import authentication_classes
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
@@ -37,6 +37,10 @@ class CreditSellingAPIView(APIView):
                 )
 
                 return Response({"message": "Credit added successfully."}, status=status.HTTP_201_CREATED)
+
+            except ValidationError as e:
+                return Response({"detail": str(e)},
+                                status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({"detail": str(e)},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)

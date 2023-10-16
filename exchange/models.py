@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -61,9 +61,14 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
+            seller = Seller.objects.select_for_update().get(pk=self.user.pk)
             if self.type == self.Type.SELL:
-                self.user.credit -= self.amount
+                if self.amount and self.amount > seller.credit:
+                    raise ValidationError("Amount cannot exceed available credit.")
+                seller.credit -= self.amount
             else:
-                self.user.credit += self.amount
-            self.user.save()
+                if self.amount and self.amount + seller.credit < 0:
+                    raise ValidationError("Amount cannot exceed available credit.")
+                seller.credit += self.amount
+            seller.save()
             super().save(*args, **kwargs)
